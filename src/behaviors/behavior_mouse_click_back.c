@@ -61,6 +61,6 @@ struct mcb_ctx {
     }                                                                             \
     SYS_INIT(mcb_init_##inst, APPLICATION, CONFIG_APPLICATION_INIT_PRIORITY);      \
     ZMK_BEHAVIOR_DEFINITION(mouse_click_back_##inst,                              \
-        mcb_pressed_##inst, mcb_released_##inst)
+        mcb_pressed_##inst, mcb_released_##inst);
 
 DT_INST_FOREACH_STATUS_OKAY(DEFINE_MCB_INST)
