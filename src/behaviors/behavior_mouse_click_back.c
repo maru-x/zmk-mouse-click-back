@@ -11,7 +11,7 @@
 #include <zmk/keymap.h>
 #include <zmk/hid.h>
 //#include <zmk/events/mouse_button_changed.h>
-#include <zmk/layers.h>
+#include <zmk/keymap.h>
 
 /* ───────────── Devicetree properties ───────────── */
 #define PROP_TIMEOUT_MS(node_id) DT_PROP_OR(node_id, timeout_ms, 500)
@@ -31,7 +31,7 @@ struct mcb_ctx {
                                                                                   \
     static void mcb_back_work_##inst(struct k_work *work) {                       \
         ARG_UNUSED(work);                                                         \
-        zmk_layer_to(mcb_ctx_##inst.return_layer);                                \
+            zmk_keymap_layer_activate(mcb_ctx_##inst.return_layer);                                \
     }                                                                             \
                                                                                   \
     static int mcb_pressed_##inst(struct zmk_behavior_binding *binding,           \
