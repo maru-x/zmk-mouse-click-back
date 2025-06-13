@@ -52,8 +52,8 @@ struct mcb_ctx {
         return ZMK_BEHAVIOR_OPAQUE;                                               \
     }                                                                             \
                                                                                   \
-    static int mcb_init_##inst(const struct device *dev) {                        \
-        ARG_UNUSED(dev);                                                          \
+    /* ↓ ここを変更 */                                                             \
+    static int mcb_init_##inst(void) {                                            \
         mcb_ctx_##inst.timeout_ms  = PROP_TIMEOUT_MS(DT_DRV_INST(inst));          \
         mcb_ctx_##inst.return_layer = PROP_RETURN_LAYER(DT_DRV_INST(inst));       \
         k_work_init_delayable(&mcb_ctx_##inst.back_work, mcb_back_work_##inst);   \
