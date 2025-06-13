@@ -52,16 +52,15 @@ struct mcb_ctx {
         return ZMK_BEHAVIOR_OPAQUE;                                               \
     }                                                                             \
                                                                                   \
-    /* ↓ ここを変更 */                                                             \
     static int mcb_init_##inst(void) {                                            \
         mcb_ctx_##inst.timeout_ms  = PROP_TIMEOUT_MS(DT_DRV_INST(inst));          \
         mcb_ctx_##inst.return_layer = PROP_RETURN_LAYER(DT_DRV_INST(inst));       \
         k_work_init_delayable(&mcb_ctx_##inst.back_work, mcb_back_work_##inst);   \
+        printk("MCB init: inst=%d, timeout=%d, return_layer=%d\n", inst, mcb_ctx_##inst.timeout_ms, mcb_ctx_##inst.return_layer); \
         return 0;                                                                 \
     }                                                                             \
     SYS_INIT(mcb_init_##inst, APPLICATION, CONFIG_APPLICATION_INIT_PRIORITY);     \
-                                                                                  \
     ZMK_BEHAVIOR_DEFINITION(mouse_click_back_##inst,                              \
-        mcb_pressed_##inst, mcb_released_##inst);
+        mcb_pressed_##inst, mcb_released_##inst)
 
 DT_INST_FOREACH_STATUS_OKAY(DEFINE_MCB_INST)
