@@ -60,7 +60,7 @@ struct mcb_ctx {
         return 0;                                                                 \
     }                                                                             \
                                                                                   \
-    static const struct zmk_behavior_driver_api mcb_driver_api_##inst = {         \
+    static const struct behavior_driver_api mcb_driver_api_##inst = {         \
         .binding_pressed = mcb_pressed_##inst,                                    \
         .binding_released = mcb_released_##inst,                                  \
     };                                                                            \
