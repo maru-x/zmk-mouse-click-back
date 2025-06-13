@@ -11,7 +11,7 @@
 #include <zmk/keymap.h>
 #include <zmk/hid.h>
 //#include <zmk/events/mouse_button_changed.h>
-#include <zmk/keymap.h>
+
 
 /* ───────────── Devicetree properties ───────────── */
 #define PROP_TIMEOUT_MS(node_id) DT_PROP_OR(node_id, timeout_ms, 500)
@@ -31,17 +31,19 @@ struct mcb_ctx {
                                                                                   \
     static void mcb_back_work_##inst(struct k_work *work) {                       \
         ARG_UNUSED(work);                                                         \
-            zmk_keymap_layer_to(mcb_ctx_##inst.return_layer);                                \
+        zmk_keymap_layer_to(mcb_ctx_##inst.return_layer);                         \
     }                                                                             \
                                                                                   \
     static int mcb_pressed_##inst(struct zmk_behavior_binding *binding,           \
                                   struct zmk_behavior_binding_event event) {      \
-        zmk_hid_mouse_button_press(mcb_ctx_##instl.button_mask);                   \
+        mcb_ctx_##inst.button_mask = BIT(binding->param1);                        \
+        zmk_hid_mouse_button_press(mcb_ctx_##inst.button_mask);                   \
         return ZMK_BEHAVIOR_OPAQUE;                                               \
     }                                                                             \
                                                                                   \
     static int mcb_released_##inst(struct zmk_behavior_binding *binding,          \
                                    struct zmk_behavior_binding_event event) {     \
+        mcb_ctx_##inst.button_mask = BIT(binding->param1);                        \
         zmk_hid_mouse_button_release(mcb_ctx_##inst.button_mask);                 \
         k_work_reschedule(&mcb_ctx_##inst.back_work,                              \
                           K_MSEC(mcb_ctx_##inst.timeout_ms));                     \
@@ -52,7 +54,6 @@ struct mcb_ctx {
         ARG_UNUSED(dev);                                                          \
         mcb_ctx_##inst.timeout_ms  = PROP_TIMEOUT_MS(DT_DRV_INST(inst));          \
         mcb_ctx_##inst.return_layer = PROP_RETURN_LAYER(DT_DRV_INST(inst));       \
-        mcb_ctx_##inst.button_mask = BIT(binding->param1); /* placeholder */      \
         k_work_init_delayable(&mcb_ctx_##inst.back_work, mcb_back_work_##inst);   \
         return 0;                                                                 \
     }                                                                             \
