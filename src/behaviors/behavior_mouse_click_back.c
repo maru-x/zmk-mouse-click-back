@@ -9,7 +9,7 @@
 #include <zephyr/device.h>
 #include <zephyr/init.h>
 #include <zephyr/kernel.h>
-#include <zmk/behavior.h>
+#include <drivers/behavior.h>
 #include <zmk/keymap.h>
 #include <zmk/hid.h>
 //#include <zmk/events/mouse_button_changed.h>
