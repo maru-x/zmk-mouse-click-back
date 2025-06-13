@@ -52,15 +52,21 @@ struct mcb_ctx {
         return ZMK_BEHAVIOR_OPAQUE;                                               \
     }                                                                             \
                                                                                   \
-    static int mcb_init_##inst(void) {                                            \
+    static int mcb_init_##inst(const struct device *dev) {                       \
+        ARG_UNUSED(dev);                                                          \
         mcb_ctx_##inst.timeout_ms  = PROP_TIMEOUT_MS(DT_DRV_INST(inst));          \
         mcb_ctx_##inst.return_layer = PROP_RETURN_LAYER(DT_DRV_INST(inst));       \
         k_work_init_delayable(&mcb_ctx_##inst.back_work, mcb_back_work_##inst);   \
-        printk("MCB init: inst=%d, timeout=%d, return_layer=%d\n", inst, mcb_ctx_##inst.timeout_ms, mcb_ctx_##inst.return_layer); \
         return 0;                                                                 \
     }                                                                             \
-    SYS_INIT(mcb_init_##inst, APPLICATION, CONFIG_APPLICATION_INIT_PRIORITY);      \
-    ZMK_BEHAVIOR_DEFINITION(mouse_click_back_##inst,                              \
-        mcb_pressed_##inst, mcb_released_##inst);
+                                                                                  \
+    static const struct zmk_behavior_driver_api mcb_driver_api_##inst = {         \
+        .binding_pressed = mcb_pressed_##inst,                                    \
+        .binding_released = mcb_released_##inst,                                  \
+    };                                                                            \
+                                                                                  \
+    BEHAVIOR_DT_INST_DEFINE(inst, mcb_init_##inst, NULL, NULL, NULL,             \
+                           POST_KERNEL, CONFIG_KERNEL_INIT_PRIORITY_DEFAULT,      \
+                           &mcb_driver_api_##inst);
 
 DT_INST_FOREACH_STATUS_OKAY(DEFINE_MCB_INST)
