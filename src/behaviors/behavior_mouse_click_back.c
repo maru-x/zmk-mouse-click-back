@@ -10,7 +10,7 @@
 #include <zmk/behavior.h>
 #include <zmk/keymap.h>
 #include <zmk/hid.h>
-#include <zmk/events/mouse_button_changed.h>
+//#include <zmk/events/mouse_button_changed.h>
 #include <zmk/layers.h>
 
 /* ───────────── Devicetree properties ───────────── */
