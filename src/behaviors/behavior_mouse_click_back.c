@@ -31,12 +31,12 @@ struct mcb_ctx {
                                                                                   \
     static void mcb_back_work_##inst(struct k_work *work) {                       \
         ARG_UNUSED(work);                                                         \
-            zmk_keymap_layer_activate(mcb_ctx_##inst.return_layer);                                \
+            zmk_keymap_layer_to(mcb_ctx_##inst.return_layer);                                \
     }                                                                             \
                                                                                   \
     static int mcb_pressed_##inst(struct zmk_behavior_binding *binding,           \
                                   struct zmk_behavior_binding_event event) {      \
-        zmk_hid_mouse_button_press(mcb_ctx_##inst.button_mask);                   \
+        zmk_hid_mouse_button_press(mcb_ctx_##instl.button_mask);                   \
         return ZMK_BEHAVIOR_OPAQUE;                                               \
     }                                                                             \
                                                                                   \
