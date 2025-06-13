@@ -59,7 +59,7 @@ struct mcb_ctx {
         printk("MCB init: inst=%d, timeout=%d, return_layer=%d\n", inst, mcb_ctx_##inst.timeout_ms, mcb_ctx_##inst.return_layer); \
         return 0;                                                                 \
     }                                                                             \
-    SYS_INIT(mcb_init_##inst, APPLICATION, CONFIG_APPLICATION_INIT_PRIORITY);     \
+    SYS_INIT(mcb_init_##inst, APPLICATION, CONFIG_APPLICATION_INIT_PRIORITY);      \
     ZMK_BEHAVIOR_DEFINITION(mouse_click_back_##inst,                              \
         mcb_pressed_##inst, mcb_released_##inst)
 
