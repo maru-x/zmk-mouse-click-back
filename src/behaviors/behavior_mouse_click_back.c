@@ -1,3 +1,5 @@
+#define DT_DRV_COMPAT zmk_behavior_mouse_click_back
+
 /*
  * behavior,mouse-click-back  —  press: BTN_DOWN / release: BTN_UP + delayed layer_to
  *
