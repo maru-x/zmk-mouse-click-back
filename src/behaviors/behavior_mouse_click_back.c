@@ -12,7 +12,7 @@
 #include <drivers/behavior.h>
 #include <zmk/keymap.h>
 #include <zmk/hid.h>
-//#include <zmk/events/mouse_button_changed.h>
+#include <zmk/events/mouse_button_changed.h>
 
 
 /* ───────────── Devicetree properties ───────────── */
@@ -39,14 +39,25 @@ struct mcb_ctx {
     static int mcb_pressed_##inst(struct zmk_behavior_binding *binding,           \
                                   struct zmk_behavior_binding_event event) {      \
         mcb_ctx_##inst.button_mask = BIT(binding->param1);                        \
-        zmk_hid_mouse_button_press(mcb_ctx_##inst.button_mask);                   \
+        /* ボタン押下イベントを発行 */                                             \
+        struct zmk_mouse_button_changed evt_press = {                             \
+            .button = mcb_ctx_##inst.button_mask,                                 \
+            .pressed = true,                                                      \
+        };                                                                        \
+        ZMK_EVENT_RAISE(evt_press);                                               \
         return ZMK_BEHAVIOR_OPAQUE;                                               \
     }                                                                             \
                                                                                   \
     static int mcb_released_##inst(struct zmk_behavior_binding *binding,          \
                                    struct zmk_behavior_binding_event event) {     \
         mcb_ctx_##inst.button_mask = BIT(binding->param1);                        \
-        zmk_hid_mouse_button_release(mcb_ctx_##inst.button_mask);                 \
+        /* ボタン解放イベントを発行 */                                             \
+        struct zmk_mouse_button_changed evt_release = {                           \
+            .button = mcb_ctx_##inst.button_mask,                                 \
+            .pressed = false,                                                     \
+        };                                                                        \
+        ZMK_EVENT_RAISE(evt_release);                                             \
+        /* レイヤー復帰は従来どおり遅延実行 */                                    \
         k_work_reschedule(&mcb_ctx_##inst.back_work,                              \
                           K_MSEC(mcb_ctx_##inst.timeout_ms));                     \
         return ZMK_BEHAVIOR_OPAQUE;                                               \
