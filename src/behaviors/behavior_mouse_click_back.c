@@ -14,7 +14,7 @@
 
 #include <zmk/behavior.h>
 #include <zmk/keymap.h>
-#include <zmk/mouse.h>
+
 
 LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 
