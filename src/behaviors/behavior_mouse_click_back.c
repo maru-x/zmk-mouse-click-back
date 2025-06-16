@@ -65,21 +65,23 @@ struct mcb_ctx {
     static int mcb_pressed_##inst(struct zmk_behavior_binding *binding,           \
                                   struct zmk_behavior_binding_event event) {      \
         LOG_DBG("position %d keycode 0x%02X", event.position, binding->param1);   \
-        /* ZMK標準のprocess_key_state関数を使用 */                                \
-        return process_key_state(zmk_behavior_get_binding(binding->behavior_dev), \
-                                binding->param1, true);                           \
+        /* ZMK標準のprocess_key_state関数を使用 */         
+        process_key_state(zmk_behavior_get_binding(binding->behavior_dev), binding->param1, true);  \
+
+        return 0;                       \
+
     }                                                                             \
                                                                                   \
     static int mcb_released_##inst(struct zmk_behavior_binding *binding,          \
                                    struct zmk_behavior_binding_event event) {     \
         LOG_DBG("position %d keycode 0x%02X", event.position, binding->param1);   \
         /* マウスボタンを離す */                                                   \
-        int ret = process_key_state(zmk_behavior_get_binding(binding->behavior_dev), \
+        process_key_state(zmk_behavior_get_binding(binding->behavior_dev), \
                                    binding->param1, false);                       \
         /* レイヤー復帰を遅延実行 */                                              \
         k_work_reschedule(&mcb_ctx_##inst.back_work,                              \
                           K_MSEC(mcb_ctx_##inst.timeout_ms));                     \
-        return ret;                                                               \
+        return 0;                                                               \
     }                                                                             \
                                                                                   \
     static int mcb_init_##inst(const struct device *dev) {                       \
