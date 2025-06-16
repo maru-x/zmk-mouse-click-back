@@ -1,5 +1,5 @@
 config ZMK_BEHAVIOR_MOUSE_CLICK_BACK
     bool "mouse click back"
     default y
-    select ZMK_MOUSE
-    select ZMK_KEYMAP
+    select ZMK_HID_MOUSE   # ← マウス HID API を有効化
+    select ZMK_LAYER       # ← レイヤー切替 API を有効化
