@@ -1,37 +1,62 @@
+/*
+ * Copyright (c) 2021 The ZMK Contributors
+ *
+ * SPDX-License-Identifier: MIT
+ */
+
 #define DT_DRV_COMPAT zmk_behavior_mouse_click_back
 
-/*
- * behavior,mouse-click-back  —  press: BTN_DOWN / release: BTN_UP + delayed layer_to
- *
- * © 2025 YourName  (MIT)
- */
-/* #include <zephyr/sys/printk.h> */ /* 不要なインクルード */
 #include <zephyr/device.h>
 #include <zephyr/init.h>
 #include <zephyr/kernel.h>
 #include <drivers/behavior.h>
+#include <zephyr/logging/log.h>
+
+#include <zmk/behavior.h>
 #include <zmk/keymap.h>
-/* #include <zmk/hid.h> */ /* 不要なインクルード */
-#include <zmk/events/mouse_button_state_changed.h>
+#include <zmk/mouse.h>
 
+LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 
+#if IS_ENABLED(CONFIG_ZMK_BEHAVIOR_METADATA)
 
-/* ───────────── Devicetree properties ───────────── */
-#define PROP_TIMEOUT_MS(node_id) DT_PROP_OR(node_id, timeout_ms, 500)
-#define PROP_RETURN_LAYER(node_id) DT_PROP_OR(node_id, return_layer, 0)
+static const struct behavior_parameter_value_metadata param_values[] = {
+    {.display_name = "MB1", .type = BEHAVIOR_PARAMETER_VALUE_TYPE_VALUE, .value = 0},
+    {.display_name = "MB2", .type = BEHAVIOR_PARAMETER_VALUE_TYPE_VALUE, .value = 1},
+    {.display_name = "MB3", .type = BEHAVIOR_PARAMETER_VALUE_TYPE_VALUE, .value = 2},
+    {.display_name = "MB4", .type = BEHAVIOR_PARAMETER_VALUE_TYPE_VALUE, .value = 3},
+    {.display_name = "MB5", .type = BEHAVIOR_PARAMETER_VALUE_TYPE_VALUE, .value = 4}};
+
+static const struct behavior_parameter_metadata_set param_metadata_set[] = {{
+    .param1_values = param_values,
+    .param1_values_len = ARRAY_SIZE(param_values),
+}};
+
+static const struct behavior_parameter_metadata metadata = {
+    .sets_len = ARRAY_SIZE(param_metadata_set),
+    .sets = param_metadata_set,
+};
+
+#endif
 
 /* ───────────── Per-instance context ───────────── */
 struct mcb_ctx {
     struct k_work_delayable back_work;
     uint16_t timeout_ms;
-    int8_t   return_layer;
-    uint8_t  button_mask;
+    int8_t return_layer;
 };
 
-/* マクロでインスタンス展開 */
 #define DEFINE_MCB_INST(inst)                                                     \
     static struct mcb_ctx mcb_ctx_##inst;                                         \
                                                                                   \
+    static void process_key_state(const struct device *dev, int32_t val, bool pressed) {    \
+        for (int i = 0; i < ZMK_HID_MOUSE_NUM_BUTTONS; i++) {                           \
+            if (val & BIT(i)) {                 \
+                WRITE_BIT(val, i, 0); \
+                input_report_key(dev, INPUT_BTN_0 + i, pressed ? 1 : 0, val == 0, K_FOREVER);   \
+            }   \
+        }   \
+    }   \
     static void mcb_back_work_##inst(struct k_work *work) {                       \
         ARG_UNUSED(work);                                                         \
         zmk_keymap_layer_to(mcb_ctx_##inst.return_layer);                         \
@@ -39,52 +64,37 @@ struct mcb_ctx {
                                                                                   \
     static int mcb_pressed_##inst(struct zmk_behavior_binding *binding,           \
                                   struct zmk_behavior_binding_event event) {      \
-        mcb_ctx_##inst.button_mask = BIT(binding->param1);                        \
-        /* struct zmk_mouse_button_state_changed evt_press = { */                 \
-        /*     .buttons   = mcb_ctx_##inst.button_mask, */                        \
-        /*     .state     = true, */                                              \
-        /*     /.timestamp = k_uptime_get(), */                                   \
-        /* }; */                                                                  \
-        /* raise_zmk_mouse_button_state_changed(evt_press); */                    \
-        raise_zmk_mouse_button_state_changed_from_encoded(                        \
-            mcb_ctx_##inst.button_mask,                                           \
-            true,                                                                 \
-            0 /* k_uptime_get() もしくは明示的に0 */                                 \
-        );                                                                        \
-        return ZMK_BEHAVIOR_OPAQUE;                                               \
+        LOG_DBG("position %d keycode 0x%02X", event.position, binding->param1);   \
+        /* ZMK標準のprocess_key_state関数を使用 */                                \
+        return process_key_state(zmk_behavior_get_binding(binding->behavior_dev), \
+                                binding->param1, true);                           \
     }                                                                             \
                                                                                   \
     static int mcb_released_##inst(struct zmk_behavior_binding *binding,          \
                                    struct zmk_behavior_binding_event event) {     \
-        mcb_ctx_##inst.button_mask = BIT(binding->param1);                        \
-        /* struct zmk_mouse_button_state_changed evt_release = { */               \
-        /*     .buttons   = mcb_ctx_##inst.button_mask, */                        \
-        /*     .state     = false, */                                             \
-        /*     /.timestamp = k_uptime_get(), */                                   \
-        /* }; */                                                                  \
-        /* raise_zmk_mouse_button_state_changed(evt_release); */                  \
-        raise_zmk_mouse_button_state_changed_from_encoded(                        \
-            mcb_ctx_##inst.button_mask,                                           \
-            false,                                                                \
-            0 /* k_uptime_get() もしくは明示的に0 */                                 \
-        );                                                                        \
-        /* レイヤー復帰は従来どおり遅延実行 */                                    \
+        LOG_DBG("position %d keycode 0x%02X", event.position, binding->param1);   \
+        /* マウスボタンを離す */                                                   \
+        int ret = process_key_state(zmk_behavior_get_binding(binding->behavior_dev), \
+                                   binding->param1, false);                       \
+        /* レイヤー復帰を遅延実行 */                                              \
         k_work_reschedule(&mcb_ctx_##inst.back_work,                              \
                           K_MSEC(mcb_ctx_##inst.timeout_ms));                     \
-        return ZMK_BEHAVIOR_OPAQUE;                                               \
+        return ret;                                                               \
     }                                                                             \
                                                                                   \
     static int mcb_init_##inst(const struct device *dev) {                       \
         ARG_UNUSED(dev);                                                          \
-        mcb_ctx_##inst.timeout_ms  = PROP_TIMEOUT_MS(DT_DRV_INST(inst));          \
-        mcb_ctx_##inst.return_layer = PROP_RETURN_LAYER(DT_DRV_INST(inst));       \
+        mcb_ctx_##inst.timeout_ms = DT_INST_PROP_OR(inst, timeout_ms, 500);       \
+        mcb_ctx_##inst.return_layer = DT_INST_PROP_OR(inst, return_layer, 0);     \
+        /* 重要：遅延ワークの初期化 */                                            \
         k_work_init_delayable(&mcb_ctx_##inst.back_work, mcb_back_work_##inst);   \
         return 0;                                                                 \
     }                                                                             \
                                                                                   \
-    static const struct behavior_driver_api mcb_driver_api_##inst = {         \
+    static const struct behavior_driver_api mcb_driver_api_##inst = {            \
         .binding_pressed = mcb_pressed_##inst,                                    \
         .binding_released = mcb_released_##inst,                                  \
+        IF_ENABLED(CONFIG_ZMK_BEHAVIOR_METADATA, (.parameter_metadata = &metadata,)) \
     };                                                                            \
                                                                                   \
     BEHAVIOR_DT_INST_DEFINE(inst, mcb_init_##inst, NULL, NULL, NULL,             \
@@ -92,3 +102,6 @@ struct mcb_ctx {
                            &mcb_driver_api_##inst);
 
 DT_INST_FOREACH_STATUS_OKAY(DEFINE_MCB_INST)
+
+
+
