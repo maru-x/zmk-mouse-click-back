@@ -40,8 +40,9 @@ struct mcb_ctx {
                                   struct zmk_behavior_binding_event event) {      \
         mcb_ctx_##inst.button_mask = BIT(binding->param1);                        \
         struct zmk_mouse_button_state_changed evt_press = {                      \
-            .button = mcb_ctx_##inst.button_mask,                                 \
-            .pressed = true,                                                      \
+            .buttons   = mcb_ctx_##inst.button_mask,                             \
+            .state     = true,                 /* ← .pressed → .state */         \
+            /* .timestamp = k_uptime_get(), */  /* 任意でタイムスタンプ */       \
         };                                                                        \
         ZMK_EVENT_RAISE(evt_press);                                               \
         return ZMK_BEHAVIOR_OPAQUE;                                               \
@@ -51,8 +52,9 @@ struct mcb_ctx {
                                    struct zmk_behavior_binding_event event) {     \
         mcb_ctx_##inst.button_mask = BIT(binding->param1);                        \
         struct zmk_mouse_button_state_changed evt_release = {                    \
-            .button = mcb_ctx_##inst.button_mask,                                 \
-            .pressed = false,                                                     \
+            .buttons   = mcb_ctx_##inst.button_mask,                             \
+            .state     = false,                /* ← .pressed → .state */        \
+            /* .timestamp = k_uptime_get(), */                                   \
         };                                                                        \
         ZMK_EVENT_RAISE(evt_release);                                             \
         /* レイヤー復帰は従来どおり遅延実行 */                                    \
