@@ -7,10 +7,10 @@ compatible: "zmk,behavior-mouse-click-back"
 #   - param2 # このビヘイビアが使用するバインディングセルの数。ここでは復帰先のレイヤー番号を指定するため1つ。
 
 properties:
-  label: # keymapの mcb ノードで使用されている label プロパティの定義
-    type: string
-    required: true
-    description: "Human-readable name for the behavior instance."
+  # label: # keymapの mcb ノードで使用されている label プロパティの定義
+  #   type: string
+  #   required: true
+  #   description: "Human-readable name for the behavior instance."
   timeout-ms:
     type: int # 'integer' から 'int' に変更 (より一般的)
     required: true
