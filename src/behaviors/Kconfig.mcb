@@ -1,4 +1,5 @@
 config ZMK_BEHAVIOR_MOUSE_CLICK_BACK
     bool "mouse click back"
+    depends on ZMK_SPLIT_ROLE_CENTRAL
     default y
     select  ZMK_MOUSE
