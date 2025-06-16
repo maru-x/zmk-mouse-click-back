@@ -51,34 +51,30 @@ struct mcb_ctx {
                                                                                   \
     static void process_key_state(const struct device *dev, int32_t val, bool pressed) {    \
         for (int i = 0; i < ZMK_HID_MOUSE_NUM_BUTTONS; i++) {                           \
-            if (val & BIT(i)) {                 \
-                WRITE_BIT(val, i, 0); \
+            if (val & BIT(i)) {                                                         \
+                WRITE_BIT(val, i, 0);                                                   \
                 input_report_key(dev, INPUT_BTN_0 + i, pressed ? 1 : 0, val == 0, K_FOREVER);   \
-            }   \
-        }   \
-    }   \
+            }                                                                       \
+        }                                                                           \
+    }                                                                               \
     static void mcb_back_work_##inst(struct k_work *work) {                       \
         ARG_UNUSED(work);                                                         \
         zmk_keymap_layer_to(mcb_ctx_##inst.return_layer);                         \
     }                                                                             \
                                                                                   \
     static int mcb_pressed_##inst(struct zmk_behavior_binding *binding,           \
-                                  struct zmk_behavior_binding_event event) {      \
-        LOG_DBG("position %d keycode 0x%02X", event.position, binding->param1);   \
-        /* ZMK標準のprocess_key_state関数を使用 */         
-        process_key_state(zmk_behavior_get_binding(binding->behavior_dev), binding->param1, true);  \
-
-        return 0;                       \
-
+                                  struct zmk_behavior_binding_event event) {        \
+        LOG_DBG("position %d keycode 0x%02X", event.position, binding->param1);     \
+        process_key_state(zmk_behavior_get_binding(binding->behavior_dev),          \
+                                                 binding->param1, true);            \
+        return 0;                                                                   \
     }                                                                             \
                                                                                   \
     static int mcb_released_##inst(struct zmk_behavior_binding *binding,          \
                                    struct zmk_behavior_binding_event event) {     \
         LOG_DBG("position %d keycode 0x%02X", event.position, binding->param1);   \
-        /* マウスボタンを離す */                                                   \
         process_key_state(zmk_behavior_get_binding(binding->behavior_dev), \
                                    binding->param1, false);                       \
-        /* レイヤー復帰を遅延実行 */                                              \
         k_work_reschedule(&mcb_ctx_##inst.back_work,                              \
                           K_MSEC(mcb_ctx_##inst.timeout_ms));                     \
         return 0;                                                               \
@@ -88,7 +84,6 @@ struct mcb_ctx {
         ARG_UNUSED(dev);                                                          \
         mcb_ctx_##inst.timeout_ms = DT_INST_PROP_OR(inst, timeout_ms, 500);       \
         mcb_ctx_##inst.return_layer = DT_INST_PROP_OR(inst, return_layer, 0);     \
-        /* 重要：遅延ワークの初期化 */                                            \
         k_work_init_delayable(&mcb_ctx_##inst.back_work, mcb_back_work_##inst);   \
         return 0;                                                                 \
     }                                                                             \
