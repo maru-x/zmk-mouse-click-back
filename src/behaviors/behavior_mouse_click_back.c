@@ -13,7 +13,7 @@
 #include <zmk/keymap.h>
 #include <zmk/hid.h>
 #include <zmk/events/mouse_button_state_changed.h>
-#include <zmk/event_manager.h>
+
 
 
 /* ───────────── Devicetree properties ───────────── */
