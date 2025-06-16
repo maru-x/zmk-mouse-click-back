@@ -14,12 +14,12 @@ properties:
     type: int # 'integer' から 'int' に変更 (より一般的)
     required: true
     description: "レイヤー復帰までのタイムアウト (ms)"
-  return-layer:
-    type: int # 'integer' から 'int' に変更 (より一般的)
-    required: true
-    description: "復帰先のレイヤー番号"
+  # return-layer:
+  #   type: int # 'integer' から 'int' に変更 (より一般的)
+  #   required: true
+  #   description: "復帰先のレイヤー番号"
   "#binding-cells": # keymapの mcb ノードで使用されている #binding-cells プロパティの定義
     type: int
     required: true
-    const: 1 # このビヘイビア定義自体が1つのセルを持つことを示す
+    const: 2 # このビヘイビア定義自体が1つのセルを持つことを示す
     description: "Number of cells for the binding argument this behavior definition itself takes."
