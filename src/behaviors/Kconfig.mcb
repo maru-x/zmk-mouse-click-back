@@ -1,4 +1,4 @@
 config ZMK_BEHAVIOR_MOUSE_CLICK_BACK
     bool "mouse click back"
-    default y
+    default n
     select  ZMK_MOUSE
