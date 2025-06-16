@@ -2,9 +2,9 @@ description: "Mouse Click Back behavior binding"
 compatible: "zmk,behavior-mouse-click-back"
 
 # This behavior takes one argument when used in a keymap (e.g., &mcb LCLK)
-binding-cells:
-  - mouse_button # このビヘイビアが使用するバインディングセルの数。ここではマウスボタンを指定するため1つ。
-  - return_layer # このビヘイビアが使用するバインディングセルの数。ここでは復帰先のレイヤー番号を指定するため1つ。
+# binding-cells:
+#   - param1 # このビヘイビアが使用するバインディングセルの数。ここではマウスボタンを指定するため1つ。
+#   - param2 # このビヘイビアが使用するバインディングセルの数。ここでは復帰先のレイヤー番号を指定するため1つ。
 
 properties:
   label: # keymapの mcb ノードで使用されている label プロパティの定義
@@ -24,3 +24,5 @@ properties:
   #   required: true
   #   const: 2 # このビヘイビア定義自体が1つのセルを持つことを示す
   #   description: "Number of cells for the binding argument this behavior definition itself takes."
+
+include: two_param.yaml
