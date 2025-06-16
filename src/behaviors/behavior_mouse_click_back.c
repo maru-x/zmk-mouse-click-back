@@ -42,10 +42,11 @@ struct mcb_ctx {
         mcb_ctx_##inst.button_mask = BIT(binding->param1);                        \
         struct zmk_mouse_button_state_changed evt_press = {                      \
             .buttons   = mcb_ctx_##inst.button_mask,                             \
-            .state     = true,                 /* ← .pressed → .state */         \
-            /* .timestamp = k_uptime_get(), */  /* 任意でタイムスタンプ */       \
+            .state     = true,                                                   \
+            /* .timestamp = k_uptime_get(), */                                   \
         };                                                                        \
-        ZMK_EVENT_RAISE(evt_press);                                               \
+        /* ZMK_EVENT_RAISE(evt_press); */                                         \
+        raise_zmk_mouse_button_state_changed(evt_press);                          \
         return ZMK_BEHAVIOR_OPAQUE;                                               \
     }                                                                             \
                                                                                   \
@@ -54,10 +55,11 @@ struct mcb_ctx {
         mcb_ctx_##inst.button_mask = BIT(binding->param1);                        \
         struct zmk_mouse_button_state_changed evt_release = {                    \
             .buttons   = mcb_ctx_##inst.button_mask,                             \
-            .state     = false,                /* ← .pressed → .state */        \
+            .state     = false,                                                  \
             /* .timestamp = k_uptime_get(), */                                   \
         };                                                                        \
-        ZMK_EVENT_RAISE(evt_release);                                             \
+        /* ZMK_EVENT_RAISE(evt_release); */                                       \
+        raise_zmk_mouse_button_state_changed(evt_release);                        \
         /* レイヤー復帰は従来どおり遅延実行 */                                    \
         k_work_reschedule(&mcb_ctx_##inst.back_work,                              \
                           K_MSEC(mcb_ctx_##inst.timeout_ms));                     \
