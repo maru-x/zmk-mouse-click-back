@@ -12,7 +12,7 @@
 #include <drivers/behavior.h>
 #include <zmk/keymap.h>
 #include <zmk/hid.h>
-#include <zmk/events/mouse_button_changed.h>
+#include <zmk/events/mouse_button_state_changed.h>
 
 
 /* ───────────── Devicetree properties ───────────── */
@@ -39,8 +39,7 @@ struct mcb_ctx {
     static int mcb_pressed_##inst(struct zmk_behavior_binding *binding,           \
                                   struct zmk_behavior_binding_event event) {      \
         mcb_ctx_##inst.button_mask = BIT(binding->param1);                        \
-        /* ボタン押下イベントを発行 */                                             \
-        struct zmk_mouse_button_changed evt_press = {                             \
+        struct zmk_mouse_button_state_changed evt_press = {                      \
             .button = mcb_ctx_##inst.button_mask,                                 \
             .pressed = true,                                                      \
         };                                                                        \
@@ -51,8 +50,7 @@ struct mcb_ctx {
     static int mcb_released_##inst(struct zmk_behavior_binding *binding,          \
                                    struct zmk_behavior_binding_event event) {     \
         mcb_ctx_##inst.button_mask = BIT(binding->param1);                        \
-        /* ボタン解放イベントを発行 */                                             \
-        struct zmk_mouse_button_changed evt_release = {                           \
+        struct zmk_mouse_button_state_changed evt_release = {                    \
             .button = mcb_ctx_##inst.button_mask,                                 \
             .pressed = false,                                                     \
         };                                                                        \
