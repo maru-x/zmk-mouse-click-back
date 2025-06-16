@@ -63,6 +63,8 @@ static const struct behavior_parameter_value_metadata param2_values[] = {
     {.display_name = "Layer 2", .type = BEHAVIOR_PARAMETER_VALUE_TYPE_VALUE, .value = 2},
     {.display_name = "Layer 3", .type = BEHAVIOR_PARAMETER_VALUE_TYPE_VALUE, .value = 3},
     {.display_name = "Layer 4", .type = BEHAVIOR_PARAMETER_VALUE_TYPE_VALUE, .value = 4},
+    {.display_name = "Layer 5", .type = BEHAVIOR_PARAMETER_VALUE_TYPE_VALUE, .value = 5},
+    {.display_name = "Layer 6", .type = BEHAVIOR_PARAMETER_VALUE_TYPE_VALUE, .value = 6},
     // Add more layers as needed or make this dynamic if possible
     {.display_name = "No Change", .type = BEHAVIOR_PARAMETER_VALUE_TYPE_VALUE, .value = NO_LAYER_CHANGE_PARAM},
 };
