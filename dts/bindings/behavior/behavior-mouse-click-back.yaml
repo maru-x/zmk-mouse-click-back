@@ -3,8 +3,8 @@ compatible: "zmk,behavior-mouse-click-back"
 
 # This behavior takes one argument when used in a keymap (e.g., &mcb LCLK)
 binding-cells: 2
-  - mouse_button # このビヘイビアが使用するバインディングセルの数。ここではマウスボタンを指定するため1つ。
-  - return_layer # このビヘイビアが使用するバインディングセルの数。ここでは復帰先のレイヤー番号を指定するため1つ。
+  # - mouse_button # このビヘイビアが使用するバインディングセルの数。ここではマウスボタンを指定するため1つ。
+  # - return_layer # このビヘイビアが使用するバインディングセルの数。ここでは復帰先のレイヤー番号を指定するため1つ。
 
 properties:
   label: # keymapの mcb ノードで使用されている label プロパティの定義
@@ -19,8 +19,8 @@ properties:
   #   type: int # 'integer' から 'int' に変更 (より一般的)
   #   required: true
   #   description: "復帰先のレイヤー番号"
-  "#binding-cells": # keymapの mcb ノードで使用されている #binding-cells プロパティの定義
-    type: int
-    required: true
-    const: 2 # このビヘイビア定義自体が1つのセルを持つことを示す
-    description: "Number of cells for the binding argument this behavior definition itself takes."
+  # "#binding-cells": # keymapの mcb ノードで使用されている #binding-cells プロパティの定義
+  #   type: int
+  #   required: true
+  #   const: 2 # このビヘイビア定義自体が1つのセルを持つことを示す
+  #   description: "Number of cells for the binding argument this behavior definition itself takes."
