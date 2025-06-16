@@ -5,13 +5,13 @@
  *
  * © 2025 YourName  (MIT)
  */
-#include <zephyr/sys/printk.h>
+/* #include <zephyr/sys/printk.h> */ /* 不要なインクルード */
 #include <zephyr/device.h>
 #include <zephyr/init.h>
 #include <zephyr/kernel.h>
 #include <drivers/behavior.h>
 #include <zmk/keymap.h>
-#include <zmk/hid.h>
+/* #include <zmk/hid.h> */ /* 不要なインクルード */
 #include <zmk/events/mouse_button_state_changed.h>
 
 
@@ -40,26 +40,34 @@ struct mcb_ctx {
     static int mcb_pressed_##inst(struct zmk_behavior_binding *binding,           \
                                   struct zmk_behavior_binding_event event) {      \
         mcb_ctx_##inst.button_mask = BIT(binding->param1);                        \
-        struct zmk_mouse_button_state_changed evt_press = {                      \
-            .buttons   = mcb_ctx_##inst.button_mask,                             \
-            .state     = true,                                                   \
-            /* .timestamp = k_uptime_get(), */                                   \
-        };                                                                        \
-        /* ZMK_EVENT_RAISE(evt_press); */                                         \
-        raise_zmk_mouse_button_state_changed(evt_press);                          \
+        /* struct zmk_mouse_button_state_changed evt_press = { */                 \
+        /*     .buttons   = mcb_ctx_##inst.button_mask, */                        \
+        /*     .state     = true, */                                              \
+        /*     /.timestamp = k_uptime_get(), */                                   \
+        /* }; */                                                                  \
+        /* raise_zmk_mouse_button_state_changed(evt_press); */                    \
+        raise_zmk_mouse_button_state_changed_from_encoded(                        \
+            mcb_ctx_##inst.button_mask,                                           \
+            true,                                                                 \
+            0 /* k_uptime_get() もしくは明示的に0 */                                 \
+        );                                                                        \
         return ZMK_BEHAVIOR_OPAQUE;                                               \
     }                                                                             \
                                                                                   \
     static int mcb_released_##inst(struct zmk_behavior_binding *binding,          \
                                    struct zmk_behavior_binding_event event) {     \
         mcb_ctx_##inst.button_mask = BIT(binding->param1);                        \
-        struct zmk_mouse_button_state_changed evt_release = {                    \
-            .buttons   = mcb_ctx_##inst.button_mask,                             \
-            .state     = false,                                                  \
-            /* .timestamp = k_uptime_get(), */                                   \
-        };                                                                        \
-        /* ZMK_EVENT_RAISE(evt_release); */                                       \
-        raise_zmk_mouse_button_state_changed(evt_release);                        \
+        /* struct zmk_mouse_button_state_changed evt_release = { */               \
+        /*     .buttons   = mcb_ctx_##inst.button_mask, */                        \
+        /*     .state     = false, */                                             \
+        /*     /.timestamp = k_uptime_get(), */                                   \
+        /* }; */                                                                  \
+        /* raise_zmk_mouse_button_state_changed(evt_release); */                  \
+        raise_zmk_mouse_button_state_changed_from_encoded(                        \
+            mcb_ctx_##inst.button_mask,                                           \
+            false,                                                                \
+            0 /* k_uptime_get() もしくは明示的に0 */                                 \
+        );                                                                        \
         /* レイヤー復帰は従来どおり遅延実行 */                                    \
         k_work_reschedule(&mcb_ctx_##inst.back_work,                              \
                           K_MSEC(mcb_ctx_##inst.timeout_ms));                     \
