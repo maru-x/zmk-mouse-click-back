@@ -7,14 +7,14 @@
 #define DT_DRV_COMPAT zmk_behavior_mouse_click_back
 
 #include <zephyr/device.h>
-#include <zephyr/init.h>
-#include <zephyr/kernel.h>
 #include <drivers/behavior.h>
 #include <zephyr/logging/log.h>
 
 #include <zmk/behavior.h>
+#include <zmk/hid.h>
+#include <zephyr/input/input.h>
+#include <zephyr/dt-bindings/input/input-event-codes.h>
 #include <zmk/keymap.h>
-
 
 LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 
