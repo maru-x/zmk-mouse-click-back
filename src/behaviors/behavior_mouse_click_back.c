@@ -54,16 +54,40 @@ static int on_keymap_binding_pressed(struct zmk_behavior_binding *binding,
                                      struct zmk_behavior_binding_event event) {
     LOG_DBG("position %d keycode 0x%02X", event.position, binding->param1);
 
-    // process_key_state(zmk_behavior_get_binding(binding->behavior_dev), binding->param1, true);
-    return zmk_hid_mouse_buttons_press(binding->param1);
+    int err = zmk_hid_mouse_buttons_press(binding->param1);
+    if (err) {
+        LOG_ERR("zmk_hid_mouse_buttons_press failed: %d", err);
+        return err;
+    }
+    err = zmk_hid_mouse_scroll_set(0, 0);
+    if (err) {
+        LOG_ERR("zmk_hid_mouse_scroll_set failed: %d", err);
+    }
+    err = zmk_hid_mouse_movement_set(0, 0);
+    if (err) {
+        LOG_ERR("zmk_hid_mouse_movement_set failed: %d", err);
+    }
+    return ZMK_BEHAVIOR_OPAQUE;
 }
 
 static int on_keymap_binding_released(struct zmk_behavior_binding *binding,
                                       struct zmk_behavior_binding_event event) {
     LOG_DBG("position %d keycode 0x%02X", event.position, binding->param1);
 
-    // process_key_state(zmk_behavior_get_binding(binding->behavior_dev), binding->param1, false);
-    return zmk_hid_mouse_buttons_release(binding->param1);
+    int err = zmk_hid_mouse_buttons_release(binding->param1);
+    if (err) {
+        LOG_ERR("zmk_hid_mouse_buttons_release failed: %d", err);
+        return err;
+    }
+    err = zmk_hid_mouse_scroll_set(0, 0);
+    if (err) {
+        LOG_ERR("zmk_hid_mouse_scroll_set failed: %d", err);
+    }
+    err = zmk_hid_mouse_movement_set(0, 0);
+    if (err) {
+        LOG_ERR("zmk_hid_mouse_movement_set failed: %d",
+    }
+    return ZMK_BEHAVIOR_OPAQUE;
 }
 
 static const struct behavior_driver_api behavior_mouse_click_back_driver_api = {
