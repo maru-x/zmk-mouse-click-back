@@ -41,21 +41,27 @@ static const struct behavior_parameter_metadata metadata = {
 
 #endif
 
-static void process_key_state(const struct device *dev, int32_t val, bool pressed) {
-    for (int i = 0; i < ZMK_HID_MOUSE_NUM_BUTTONS; i++) {
-        if (val & BIT(i)) {
-            WRITE_BIT(val, i, 0);
-            input_report_key(dev, INPUT_BTN_0 + i, pressed ? 1 : 0, val == 0, K_FOREVER);
-        }
-    }
-}
+// static void process_key_state(const struct device *dev, int32_t val, bool pressed) {
+//     for (int i = 0; i < ZMK_HID_MOUSE_NUM_BUTTONS; i++) {
+//         if (val & BIT(i)) {
+//             WRITE_BIT(val, i, 0);
+//             input_report_key(dev, INPUT_BTN_0 + i, pressed ? 1 : 0, val == 0, K_FOREVER);
+//         }
+//     }
+// }
 
 static int on_keymap_binding_pressed(struct zmk_behavior_binding *binding,
                                      struct zmk_behavior_binding_event event) {
     LOG_DBG("position %d keycode 0x%02X", event.position, binding->param1);
 
-    process_key_state(zmk_behavior_get_binding(binding->behavior_dev), binding->param1, true);
-
+    // process_key_state(zmk_behavior_get_binding(binding->behavior_dev), binding->param1, true);
+    int err = zmk_hid_mouse_button_press(binding->param1);
+    if (err) {
+        LOG_ERR("Failed to press mouse button %d: %d", binding->param1, err);
+        return err;
+    } 
+    // If the button press was successful, we can also send a key event
+    zmk_endpoints_send_mouse_report();
     return 0;
 }
 
@@ -63,8 +69,14 @@ static int on_keymap_binding_released(struct zmk_behavior_binding *binding,
                                       struct zmk_behavior_binding_event event) {
     LOG_DBG("position %d keycode 0x%02X", event.position, binding->param1);
 
-    process_key_state(zmk_behavior_get_binding(binding->behavior_dev), binding->param1, false);
-
+    // process_key_state(zmk_behavior_get_binding(binding->behavior_dev), binding->param1, false);
+    int err = zmk_hid_mouse_button_release(binding->param1);
+    if (err) {
+        LOG_ERR("Failed to release mouse button %d: %d", binding->param1, err);
+        return err; 
+    }
+    // If the button release was successful, we can also send a key event
+    zmk_endpoints_send_mouse_report();
     return 0;
 }
 
