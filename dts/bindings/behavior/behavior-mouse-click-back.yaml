@@ -4,12 +4,14 @@ compatible: "zmk,behavior-mouse-click-back"
 properties:
   timeout-ms:
     type: int # 'integer' から 'int' に変更 (より一般的)
-    required: true
+    required: false
+    default: 500
     description: "レイヤー復帰までのタイムアウト (ms)"
-  # return-layer:
-  #   type: int # 'integer' から 'int' に変更 (より一般的)
-  #   required: true
-  #   description: "復帰先のレイヤー番号"
+  return-layer:
+    type: int # 'integer' から 'int' に変更 (より一般的)
+    required: false
+    default: 0
+    description: "復帰先のレイヤー番号"
 
 include: one_param.yaml
 #include: two_param.yaml
