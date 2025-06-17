@@ -11,9 +11,10 @@
 #include <zephyr/logging/log.h>
 
 #include <zmk/behavior.h>
-#include <zmk/hid.h>
+// #include <zmk/hid.h> // input_report_key を使う場合、直接は不要になることがあります
+// #include <zmk/host.h> // 不要
 #include <zephyr/input/input.h>
-#include <zephyr/dt-bindings/input/input-event-codes.h>
+#include <zephyr/dt-bindings/input/input-event-codes.h> // MB1 などが定義されている
 #include <zmk/keymap.h>
 
 LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
@@ -52,34 +53,16 @@ static const struct behavior_parameter_metadata metadata = {
 
 static int on_keymap_binding_pressed(struct zmk_behavior_binding *binding,
                                      struct zmk_behavior_binding_event event) {
-    LOG_DBG("position %d keycode 0x%02X", event.position, binding->param1);
+    LOG_DBG("position %d keycode 0x%02X PRESSED (using input_report_key)", event.position, binding->param1);
 
-    int err = zmk_hid_mouse_buttons_press(binding->param1);
-    if (err) {
-        LOG_ERR("zmk_hid_mouse_buttons_press failed: %d", err);
-        return err;
-    }
-    zmk_hid_mouse_scroll_set(0, 0);
-
-    zmk_hid_mouse_movement_set(0, 0);
-
-    return ZMK_BEHAVIOR_OPAQUE;
+    return input_report_key(binding->behavior_dev, binding->param1, 1, true, K_FOREVER);
 }
 
 static int on_keymap_binding_released(struct zmk_behavior_binding *binding,
                                       struct zmk_behavior_binding_event event) {
-    LOG_DBG("position %d keycode 0x%02X", event.position, binding->param1);
+    LOG_DBG("position %d keycode 0x%02X RELEASED (using input_report_key)", event.position, binding->param1);
 
-    int err = zmk_hid_mouse_buttons_release(binding->param1);
-    if (err) {
-        LOG_ERR("zmk_hid_mouse_buttons_release failed: %d", err);
-        return err;
-    }
-    zmk_hid_mouse_scroll_set(0, 0);
-
-    zmk_hid_mouse_movement_set(0, 0);
-
-    return ZMK_BEHAVIOR_OPAQUE;
+    return input_report_key(binding->behavior_dev, binding->param1, 0, true, K_FOREVER);
 }
 
 static const struct behavior_driver_api behavior_mouse_click_back_driver_api = {
