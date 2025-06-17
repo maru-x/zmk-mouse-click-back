@@ -59,14 +59,10 @@ static int on_keymap_binding_pressed(struct zmk_behavior_binding *binding,
         LOG_ERR("zmk_hid_mouse_buttons_press failed: %d", err);
         return err;
     }
-    err = zmk_hid_mouse_scroll_set(0, 0);
-    if (err) {
-        LOG_ERR("zmk_hid_mouse_scroll_set failed: %d", err);
-    }
-    err = zmk_hid_mouse_movement_set(0, 0);
-    if (err) {
-        LOG_ERR("zmk_hid_mouse_movement_set failed: %d", err);
-    }
+    zmk_hid_mouse_scroll_set(0, 0);
+
+    zmk_hid_mouse_movement_set(0, 0);
+
     return ZMK_BEHAVIOR_OPAQUE;
 }
 
@@ -79,14 +75,10 @@ static int on_keymap_binding_released(struct zmk_behavior_binding *binding,
         LOG_ERR("zmk_hid_mouse_buttons_release failed: %d", err);
         return err;
     }
-    err = zmk_hid_mouse_scroll_set(0, 0);
-    if (err) {
-        LOG_ERR("zmk_hid_mouse_scroll_set failed: %d", err);
-    }
-    err = zmk_hid_mouse_movement_set(0, 0);
-    if (err) {
-        LOG_ERR("zmk_hid_mouse_movement_set failed: %d",
-    }
+    zmk_hid_mouse_scroll_set(0, 0);
+
+    zmk_hid_mouse_movement_set(0, 0);
+
     return ZMK_BEHAVIOR_OPAQUE;
 }
 
