@@ -14,7 +14,6 @@
 #include <zmk/behavior.h>
 #include <zmk/hid.h>
 #include <zmk/keymap.h>
-#include <zmk/endpoints.h>
 #include <zephyr/input/input.h>
 #include <zephyr/dt-bindings/input/input-event-codes.h>
 
@@ -28,11 +27,7 @@ struct behavior_mouse_click_back_config {
 struct behavior_mouse_click_back_data {
     struct k_work_delayable work;
     const struct device *dev;
-    bool motion_detected;
 };
-
-// グローバルな入力リスナー
-static struct behavior_mouse_click_back_data *active_mcb_data = NULL;
 
 #if DT_HAS_COMPAT_STATUS_OKAY(DT_DRV_COMPAT)
 
@@ -47,29 +42,7 @@ static void mcb_work_handler(struct k_work *work_item) {
     if (err) {
         LOG_ERR("Failed to switch to layer %u: %d", config->return_layer, err);
     }
-    
-    // リセット
-    active_mcb_data = NULL;
 }
-
-static void input_listener_cb(struct input_event *evt) {
-    if (!active_mcb_data) {
-        return;
-    }
-    
-    if (evt->type == INPUT_EV_REL && (evt->code == INPUT_REL_X || evt->code == INPUT_REL_Y)) {
-        if (evt->value != 0) {
-            active_mcb_data->motion_detected = true;
-            if (k_work_delayable_is_pending(&active_mcb_data->work)) {
-                k_work_cancel_delayable(&active_mcb_data->work);
-                LOG_DBG("Layer switch cancelled due to mouse movement");
-                active_mcb_data = NULL;
-            }
-        }
-    }
-}
-
-INPUT_LISTENER(mouse_click_back, input_listener_cb);
 
 #if IS_ENABLED(CONFIG_ZMK_BEHAVIOR_METADATA)
 
@@ -107,7 +80,6 @@ static int on_keymap_binding_pressed(struct zmk_behavior_binding *binding,
     if (k_work_delayable_is_pending(&data->work)) {
         k_work_cancel_delayable(&data->work);
         LOG_DBG("Delayed work cancelled on press for %s.", dev->name);
-        active_mcb_data = NULL;
     }
 
     int err = zmk_hid_mouse_button_press(binding->param1);
@@ -115,7 +87,7 @@ static int on_keymap_binding_pressed(struct zmk_behavior_binding *binding,
         LOG_ERR("Failed to press mouse button %d: %d", binding->param1, err);
         return err;
     } 
-    // マウスレポートを送信
+    // If the button press was successful, we can also send a key event
     zmk_endpoints_send_mouse_report();
     return 0;
 }
@@ -137,26 +109,26 @@ static int on_keymap_binding_released(struct zmk_behavior_binding *binding,
         LOG_ERR("Failed to release mouse button %d: %d", binding->param1, err);
         return err;
     }
-    // マウスレポートを送信
+    // If the button release was successful, we can also send a key event
     zmk_endpoints_send_mouse_report();
 
-    // motion_detected フラグをリセット
-    data->motion_detected = false;
-    active_mcb_data = data;
-    
     if (config->timeout_ms > 0) {
         k_work_schedule(&data->work, K_MSEC(config->timeout_ms));
-        LOG_DBG("Delayed work scheduled for layer %u, timeout %u ms on %s", 
-                config->return_layer, config->timeout_ms, dev->name);
+        LOG_DBG("Delayed work scheduled for layer %u, timeout %u ms on %s", config->return_layer, config->timeout_ms, dev->name);
+    } else {
+        LOG_DBG("Delayed work not scheduled for %s as timeout_ms is 0.", dev->name);
     }
     return ZMK_BEHAVIOR_OPAQUE;
 }
 
 static int behavior_mouse_click_back_init(const struct device *dev) {
     struct behavior_mouse_click_back_data *data = dev->data;
+    const struct behavior_mouse_click_back_config *config = dev->config;
 
     data->dev = dev;
-    data->motion_detected = false;
+
+    LOG_DBG("Initializing behavior_mouse_click_back '%s' with timeout %ums, return_layer %u",
+              dev->name, config->timeout_ms, config->return_layer);
 
     k_work_init_delayable(&data->work, mcb_work_handler);
     return 0;
