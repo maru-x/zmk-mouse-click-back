@@ -27,6 +27,8 @@ struct behavior_mouse_click_back_config {
 struct behavior_mouse_click_back_data {
     struct k_work_delayable work;
     const struct device *dev;
+    struct input_listener listener;
+    bool motion_detected;
 };
 
 #if DT_HAS_COMPAT_STATUS_OKAY(DT_DRV_COMPAT)
@@ -41,6 +43,20 @@ static void mcb_work_handler(struct k_work *work_item) {
     int err = zmk_keymap_layer_to(config->return_layer);
     if (err) {
         LOG_ERR("Failed to switch to layer %u: %d", config->return_layer, err);
+    }
+}
+
+static void input_listener_cb(struct input_event *evt, void *user_data) {
+    struct behavior_mouse_click_back_data *data = user_data;
+    
+    if (evt->type == INPUT_EV_REL && (evt->code == INPUT_REL_X || evt->code == INPUT_REL_Y)) {
+        if (evt->value != 0) {
+            data->motion_detected = true;
+            if (k_work_delayable_is_pending(&data->work)) {
+                k_work_cancel_delayable(&data->work);
+                LOG_DBG("Layer switch cancelled due to mouse movement");
+            }
+        }
     }
 }
 
@@ -112,11 +128,13 @@ static int on_keymap_binding_released(struct zmk_behavior_binding *binding,
     // If the button release was successful, we can also send a key event
     zmk_endpoints_send_mouse_report();
 
+    // リセット motion_detected フラグ
+    data->motion_detected = false;
+    
     if (config->timeout_ms > 0) {
         k_work_schedule(&data->work, K_MSEC(config->timeout_ms));
-        LOG_DBG("Delayed work scheduled for layer %u, timeout %u ms on %s", config->return_layer, config->timeout_ms, dev->name);
-    } else {
-        LOG_DBG("Delayed work not scheduled for %s as timeout_ms is 0.", dev->name);
+        LOG_DBG("Delayed work scheduled for layer %u, timeout %u ms on %s", 
+                config->return_layer, config->timeout_ms, dev->name);
     }
     return ZMK_BEHAVIOR_OPAQUE;
 }
@@ -126,9 +144,12 @@ static int behavior_mouse_click_back_init(const struct device *dev) {
     const struct behavior_mouse_click_back_config *config = dev->config;
 
     data->dev = dev;
+    data->motion_detected = false;
 
-    LOG_DBG("Initializing behavior_mouse_click_back '%s' with timeout %ums, return_layer %u",
-              dev->name, config->timeout_ms, config->return_layer);
+    // 入力リスナーを設定
+    data->listener.callback = input_listener_cb;
+    data->listener.user_data = data;
+    input_listener_register(NULL, &data->listener);
 
     k_work_init_delayable(&data->work, mcb_work_handler);
     return 0;
