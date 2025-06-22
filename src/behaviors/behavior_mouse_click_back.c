@@ -10,6 +10,7 @@
 #include <drivers/behavior.h>
 #include <zephyr/logging/log.h>
 #include <zephyr/kernel.h>
+#include <zmk/endpoints.h>
 
 #include <zmk/behavior.h>
 #include <zmk/hid.h>
