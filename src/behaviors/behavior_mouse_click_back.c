@@ -66,6 +66,14 @@ static const struct behavior_parameter_metadata metadata = {
 
 #endif
 
+void mcb_timer_cancel(){
+    // Cancel the delayed work if it's scheduled
+    if (k_work_delayable_is_pending(&data->work)) {
+        k_work_cancel_delayable(&data->work);
+        LOG_DBG("Delayed work cancelled on timer cancel for %s.", dev->name);
+    }
+}
+
 static int on_keymap_binding_pressed(struct zmk_behavior_binding *binding,
                                      struct zmk_behavior_binding_event event) {
     LOG_DBG("position %d, param1 (button) 0x%02X", event.position, binding->param1);
