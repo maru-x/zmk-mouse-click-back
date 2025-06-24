@@ -66,11 +66,25 @@ static const struct behavior_parameter_metadata metadata = {
 
 #endif
 
-void mcb_timer_cancel(){
+// グローバル変数として最初に見つかったデバイスインスタンスを保存
+static const struct device *mcb_device = NULL;
+
+void mcb_timer_cancel() {
+    if (!mcb_device) {
+        LOG_ERR("MCB device not initialized");
+        return;
+    }
+    
+    struct behavior_mouse_click_back_data *data = mcb_device->data;
+    if (!data) {
+        LOG_ERR("MCB device data is NULL");
+        return;
+    }
+    
     // Cancel the delayed work if it's scheduled
     if (k_work_delayable_is_pending(&data->work)) {
         k_work_cancel_delayable(&data->work);
-        LOG_DBG("Delayed work cancelled on timer cancel for %s.", dev->name);
+        LOG_DBG("Delayed work cancelled on timer cancel for %s.", mcb_device->name);
     }
 }
 
@@ -135,6 +149,12 @@ static int behavior_mouse_click_back_init(const struct device *dev) {
     const struct behavior_mouse_click_back_config *config = dev->config;
 
     data->dev = dev;
+    
+    // 最初のデバイスインスタンスをグローバル変数に保存
+    if (!mcb_device) {
+        mcb_device = dev;
+        LOG_DBG("MCB device registered for external access: %s", dev->name);
+    }
 
     LOG_DBG("Initializing behavior_mouse_click_back '%s' with timeout %ums, return_layer %u",
               dev->name, config->timeout_ms, config->return_layer);
